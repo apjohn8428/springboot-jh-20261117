@@ -21,5 +21,5 @@ public interface QuestionRepository extends JpaRepository<Question, Integer> { /
 	//특정 키워드를 갖는 제목 또는 내용을 작성일 오름차순으로 정리
 	List<Question> findBySubjectLikeOrContentLikeOrderByCreateDateAsc(String subject, String content);
 	
-	void deletebySubjectLike(String keyword);
+	
 }

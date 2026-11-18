@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SBB - 개발자 지식 공유 커뮤니티</title>
+    
+    <!-- Pretendard 폰트 & Google Material Symbols -->
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
+    
+    <!-- 분리된 CSS 연결 (Thymeleaf 경로 표현식 사용) -->
+    <link rel="stylesheet" th:href="@{/css/index.css}">
+</head>
+<body>
+
+    <!-- 상단 앱 바 (Material Top App Bar) -->
+    <header class="top-app-bar">
+        <div class="app-bar-container">
+            <a th:href="@{/}" class="logo">
+                <span class="material-symbols-rounded logo-icon">forum</span>
+                <span class="logo-text">SBB</span>
+            </a>
+
+            <nav class="nav-actions">
+                <a th:href="@{/question/list}" class="btn btn-text">질문 게시판</a>
+                
+                <!-- 비로그인 상태일 때 표시 -->
+                <th:block sec:authorize="isAnonymous()">
+                    <a th:href="@{/user/login}" class="btn btn-outlined">로그인</a>
+                    <a th:href="@{/user/signup}" class="btn btn-filled">회원가입</a>
+                </th:block>
+
+                <!-- 로그인 상태일 때 표시 -->
+                <th:block sec:authorize="isAuthenticated()">
+                    <span class="user-badge">
+                        <span class="material-symbols-rounded">account_circle</span>
+                        <span sec:authentication="name">사용자</span>님
+                    </span>
+                    <a th:href="@{/user/logout}" class="btn btn-outlined">로그아웃</a>
+                </th:block>
+            </nav>
+        </div>
+    </header>
+
+    <!-- 메인 벤토 그리드 컨테이너 -->
+    <main class="bento-container">
+        
+        <!-- 1. 히어로 카드 (메인 소개 및 CTA) -->
+        <section class="bento-card hero-card">
+            <div class="badge-pill">Spring Boot Board Project</div>
+            <h1>궁금한 모든 것을 묻고,<br>함께 성장하는 <span class="highlight">SBB</span></h1>
+            <p class="subtitle">개발 중 마주친 에러부터 아키텍처 고민까지. 동료 개발자들과 지식을 나누고 해결책을 찾아보세요.</p>
+            <div class="hero-actions">
+                <a th:href="@{/question/create}" class="btn btn-filled btn-large">
+                    <span class="material-symbols-rounded">edit_square</span>
+                    질문 작성하기
+                </a>
+                <a th:href="@{/question/list}" class="btn btn-tonal btn-large">
+                    게시판 둘러보기
+                </a>
+            </div>
+        </section>
+
+        <!-- 2. 빠른 검색 카드 -->
+        <section class="bento-card search-card">
+            <div class="card-header">
+                <span class="material-symbols-rounded icon-box primary">search</span>
+                <h2>빠른 질문 검색</h2>
+            </div>
+            <p>이미 해결된 질문이 있는지 먼저 찾아보세요.</p>
+            <form th:action="@{/question/list}" method="get" class="search-form">
+                <input type="text" name="kw" placeholder="키워드를 입력하세요 (예: Spring, JPA)..." required>
+                <button type="submit" class="btn btn-filled icon-only">
+                    <span class="material-symbols-rounded">arrow_forward</span>
+                </button>
+            </form>
+        </section>
+
+        <!-- 3. 커뮤니티 통계 카드 -->
+        <section class="bento-card stats-card">
+            <div class="card-header">
+                <span class="material-symbols-rounded icon-box tertiary">monitoring</span>
+                <h2>SBB 현황</h2>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <span class="stat-number" th:text="${totalQuestions != null ? totalQuestions : '1,248'}">1,248</span>
+                    <span class="stat-label">등록된 질문</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" th:text="${totalAnswers != null ? totalAnswers : '3,892'}">3,892</span>
+                    <span class="stat-label">달린 답변</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. 최신 질문 미리보기 카드 -->
+        <section class="bento-card recent-card">
+            <div class="card-header space-between">
+                <div class="title-group">
+                    <span class="material-symbols-rounded icon-box secondary">bolt</span>
+                    <h2>방금 올라온 질문</h2>
+                </div>
+                <a th:href="@{/question/list}" class="link-more">전체보기 &rarr;</a>
+            </div>
+            
+            <ul class="question-list">
+                <!-- 백엔드에서 recentQuestions 리스트를 넘겨줄 경우 렌더링 -->
+                <li th:each="question : ${recentQuestions}" class="question-item">
+                    <a th:href="@{|/question/detail/${question.id}|}">
+                        <span class="q-title" th:text="${question.subject}">질문 제목이 들어갑니다.</span>
+                        <span class="q-meta">
+                            <span th:text="${#lists.size(question.answerList)} + ' 답변'">0 답변</span> · 
+                            <span th:text="${#temporals.format(question.createDate, 'MM-dd')}">11-18</span>
+                        </span>
+                    </a>
+                </li>
+
+                <!-- 데이터가 없을 때 보여줄 더미 데이터 (개발/테스트 확인용) -->
+                <th:block th:if="${#lists.isEmpty(recentQuestions)}">
+                    <li class="question-item">
+                        <a href="#">
+                            <span class="q-title">Spring Security 로그인 후 리다이렉트 경로 설정 방법</span>
+                            <span class="q-meta">3 답변 · 방금 전</span>
+                        </a>
+                    </li>
+                    <li class="question-item">
+                        <a href="#">
+                            <span class="q-title">Thymeleaf 레이아웃 상속(layout:decorate) 적용 시 CSS 깨짐 현상</span>
+                            <span class="q-meta">1 답변 · 15분 전</span>
+                        </a>
+                    </li>
+                    <li class="question-item">
+                        <a href="#">
+                            <span class="q-title">JPA N+1 문제 해결을 위한 Fetch Join 사용 시 페이징 처리</span>
+                            <span class="q-meta">5 답변 · 1시간 전</span>
+                        </a>
+                    </li>
+                </th:block>
+            </ul>
+        </section>
+
+        <!-- 5. 회원 유도 / 마이페이지 카드 -->
+        <section class="bento-card auth-card">
+            <!-- 비로그인 상태 -->
+            <div sec:authorize="isAnonymous()" class="auth-content">
+                <span class="material-symbols-rounded icon-box primary">person_add</span>
+                <h2>지금 합류하세요</h2>
+                <p>회원가입 후 질문을 남기고, 다른 사람의 질문에 답변을 달아 포인트를 쌓아보세요.</p>
+                <div class="auth-buttons">
+                    <a th:href="@{/user/signup}" class="btn btn-filled full-width">무료 회원가입</a>
+                    <a th:href="@{/user/login}" class="btn btn-outlined full-width">기존 계정으로 로그인</a>
+                </div>
+            </div>
+
+            <!-- 로그인 상태 -->
+            <div sec:authorize="isAuthenticated()" class="auth-content">
+                <span class="material-symbols-rounded icon-box primary">waving_hand</span>
+                <h2>환영합니다, <span sec:authentication="name">회원</span>님!</h2>
+                <p>오늘도 해결되지 않는 문제가 있다면 SBB 커뮤니티에 질문해 보세요.</p>
+                <div class="auth-buttons">
+                    <a th:href="@{/question/create}" class="btn btn-filled full-width">새 질문 등록하기</a>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- 푸터 -->
+    <footer class="footer">
+        <p>&copy; 2026 SBB (Spring Boot Board) Project. Built with Material Design 3 & Bento Grid.</p>
+    </footer>
+
+</body>
+</html>

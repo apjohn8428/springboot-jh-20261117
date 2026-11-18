@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" th::href="@{/css/style.css}">
+<script type="text/javascript" th:src="@{/js/test.js}"></script>
+<title>thymleaf 연습</title>
+</head>
+<body>
+	<!-- header -->
+	<div th:replace="~{fragments/header :: header}"></div>
+	
+	<h2>thymleaf 출력</h2>
+	<hr>
+	<!-- thymleaf 문법은 태그 안에 작성해야 한다 -->
+	<h3>이름: <span th:text="${name}"></span></h3>
+	<h3>나이: <span th:text="${age}"></span></h3>
+	<hr>
+	<h2>if문</h2>
+	<p th:if="${age >= 20}">성인입니다</p>
+	<p th:if="${age < 20}">미성년입니다</p>
+	<p th:if="${loginId}">tiger님 로그인 중</p>
+	<hr>
+	<p th:if="${age >= 20}">성인입니다</p>
+	<p th:unless="${age >= 20}">미성년입니다</p> <!-- unless: 조건의 반대를 잡는다 -->
+	<hr>
+	<h2>반복문</h2>
+	<table border="1">
+		<tr>
+			<td>번호</td>
+			<td>이름</td>
+		</tr>
+		<tr th:each="name, status:${strs}"> <!-- status: 번호를 만드는 기능 -->
+			<td th:text="${status.count}">번호</td>
+			<td><a th:href="@{/question/list}" th:text="${name}">이름</a></td> <!-- 하이퍼링크 작성법 -->
+		</tr>
+	</table>
+	<hr>
+	<h2>이미지 불러오기</h2>
+	<img th:src="@{css/rose.jpg}"> <!-- 이미지 삽입법 -->
+	
+	<!-- footer -->
+	<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>
